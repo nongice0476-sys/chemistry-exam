@@ -1,0 +1,23 @@
+<!doctype html>
+<html lang="th">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="description" content="Chemistry 1 Midterm Practice — 3 non-duplicate university-level exam sets">
+  <title>Chemistry 1 — Midterm Practice 3 Sets</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
+  <link rel="stylesheet" href="./style.css">
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js"></script>
+</head>
+<body>
+<header><div class="toolbar"><h1>Chemistry 1 — Midterm Practice</h1><select id="setSel"><option>ชุด 1</option><option>ชุด 2</option><option>ชุด 3</option></select><button data-part="mcq" class="tab active">Part A: MCQ</button><button data-part="written" class="tab">Part B: Written</button><button id="copy">คัดลอกคำตอบ</button><button id="submit" class="primary">ส่งข้อสอบ</button><button id="reset">เริ่มชุดนี้ใหม่</button></div></header>
+<div class="layout"><main><section class="card"><h2 id="title"></h2><div class="badges"><span class="badge">มหาวิทยาลัย ปี 1</span><span class="badge">20 MCQ + 5 Written</span><span class="badge">100 คะแนน</span><span class="badge">แนะนำ 90 นาที/ชุด</span></div><p class="muted">3 ชุดใช้โจทย์คนละข้อ • ครอบคลุม 5 บท • เฉลยซ่อนจนกดส่งข้อสอบ • ข้อมูลถูกเก็บในเบราว์เซอร์อัตโนมัติ</p><div class="notice">Part A เน้นรูปแบบใกล้แนวข้อสอบกลางภาค: conceptual + calculation + trend + error-sensitive distractors. Part B ใช้ประเมินการอธิบายเหตุผลและการแก้โจทย์หลายขั้นตอน</div></section><div id="questions"></div></main>
+<aside><h3>ความคืบหน้า</h3><div id="pt"></div><div class="bar"><div id="pb"></div></div><h3>ไปยังข้อ</h3><div id="nav" class="gridnav"></div><h3>หัวข้อ</h3><ul class="topiclist"><li>Atomic Structure</li><li>Periodic Table & Atomic Properties</li><li>Chemical Bonding</li><li>Stoichiometry</li><li>Liquid & Solution</li></ul><h3>Formula Sheet</h3><div class="formula">\(E=h\nu=hc/\lambda\)</div><div class="formula">\(\Delta E=(-2.18\times10^{-18}J)(1/n_f^2-1/n_i^2)\)</div><div class="formula">\(r_n=a_0n^2/Z\), \(a_0=0.529\,\AA\)</div><div class="formula">\(Z_{eff}=Z-S\)</div><div class="formula">\(M_1V_1=M_2V_2\)</div><div class="formula">\(\Delta T_f=iK_fm\), \(\Delta T_b=iK_bm\)</div><div class="formula">\(P_A=X_AP_A^0\), \(\Delta P=P_A^0X_B\)</div><div class="formula">\(\pi=MRT=nRT/V\)</div></aside></div>
+<dialog id="scoreDlg"><div id="scoreBody"></div><button id="closeScore">ปิด</button></dialog><dialog id="imageDlg"><button id="closeImage" aria-label="ปิดภาพ">ปิด</button><img id="imageZoom" class="question-image" alt="ภาพประกอบโจทย์ขนาดใหญ่" style="max-height:82vh;cursor:zoom-out"></dialog>
+<script src="./set1.js"></script>
+<script src="./set2.js"></script>
+<script src="./set3.js"></script>
+<script src="./app.js"></script>
+</body>
+</html>
