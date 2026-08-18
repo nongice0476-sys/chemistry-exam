@@ -1,64 +1,17 @@
 const DATA=window.CHEMISTRY_EXAM_DATA; const letters=['A','B','C','D']; let setName=localStorage.getItem('chem3_set')||'ชุด 1',part='mcq',submitted=false,ans={},wr={}; const $=s=>document.querySelector(s);
 function key(x){return 'chem3_'+setName+'_'+x} function load(){try{ans=JSON.parse(localStorage.getItem(key('ans'))||'{}');wr=JSON.parse(localStorage.getItem(key('wr'))||'{}')}catch(e){ans={};wr={}} submitted=localStorage.getItem(key('sub'))==='1'} function save(){localStorage.setItem(key('ans'),JSON.stringify(ans));localStorage.setItem(key('wr'),JSON.stringify(wr))}
-function tex(scope=document.body){
-  if(!window.renderMathInElement)return;
-  renderMathInElement(scope,{
-    delimiters:[
-      {left:'\\[',right:'\\]',display:true},
-      {left:'\\(',right:'\\)',display:false}
-    ],
-    throwOnError:false,
-    strict:false
-  });
-}
-function render(){const d=DATA[setName],qs=d[part];$('#title').textContent='Chemistry 1 — '+setName;$('#questions').innerHTML=`<h2>${part==='mcq'?'PART A — Multiple Choice':'PART B — Written Response'}</h2>`+qs.map(q=>part==='mcq'?mc(q):wq(q)).join('');bind();nav();progress();setTimeout(()=>tex($('#questions')),30)}
-function mediaHtml(q){
-  if(!q.image)return '';
-  const source=q.imageSourceUrl
-    ? `<a href="${q.imageSourceUrl}" target="_blank" rel="noopener">${q.imageSource||'แหล่งที่มาภาพ'}</a>`
-    : (q.imageSource||'');
-  return `<img src="${q.image}" class="question-image" alt="ภาพประกอบข้อ ${q.id}" loading="lazy" data-zoom="${q.image}">${source?`<div class="image-source">ที่มาภาพ: ${source}</div>`:''}`;
-}
-function mc(q){
-  return `<section class="card" id="q${q.id}">
-    <div class="qhead"><b>ข้อ ${q.id}</b><span>${q.topic} · ${q.difficulty}</span></div>
-    <div class="prompt">${q.prompt}</div>
-    ${mediaHtml(q)}
-    <div class="options">${q.options.map((o,i)=>`<label class="option ${submitted?(i===q.answer?'correct':(ans[q.id]===i?'wrong':'')):''}"><input type="radio" name="q${q.id}" value="${i}" ${ans[q.id]===i?'checked':''} ${submitted?'disabled':''}><b>${letters[i]}.</b><span>${o}</span></label>`).join('')}</div>
-    ${submitted?`<div class="solution"><b>เฉลย ${letters[q.answer]}</b><br>${q.explanation}</div>`:''}
-  </section>`;
-}
-function wq(q){
-  return `<section class="card" id="q${q.id}">
-    <div class="qhead"><b>ข้อ ${q.id}</b><span>${q.topic} · ${q.difficulty}</span></div>
-    <div class="written-question">
-      <span class="question-label">โจทย์</span>
-      <div class="question-text">${q.prompt}</div>
-      ${mediaHtml(q)}
-    </div>
-    <textarea class="written" data-id="${q.id}" ${submitted?'readonly':''} placeholder="เขียนวิธีทำ เหตุผล และคำตอบของคุณที่นี่...">${wr[q.id]||''}</textarea>
-    ${submitted?`<div class="solution"><b>แนวคำตอบ</b><br>${q.solution}</div>`:''}
-  </section>`;
-}
-function bind(){
-  document.querySelectorAll('input[type=radio]').forEach(x=>x.onchange=()=>{ans[+x.name.slice(1)]=+x.value;save();progress();nav()});
-  document.querySelectorAll('.written').forEach(x=>x.oninput=()=>{wr[+x.dataset.id]=x.value;save();progress();nav()});
-  document.querySelectorAll('[data-zoom]').forEach(img=>img.onclick=()=>{
-    $('#imageZoom').src=img.dataset.zoom;
-    imageDlg.showModal();
-  });
-}
+function tex(scope=document.body){if(!window.renderMathInElement)return false;try{renderMathInElement(scope,{delimiters:[{left:'\\[',right:'\\]',display:true},{left:'\\(',right:'\\)',display:false}],throwOnError:false,strict:false});return true}catch(e){console.warn('KaTeX render failed',e);return false}}
+function fallbackMath(scope=document.body){if(window.renderMathInElement)return;scope.querySelectorAll('.prompt,.question-text,.solution').forEach(el=>{if(!el.innerHTML.includes('\\'))return;let x=el.innerHTML;x=x.replace(/\\\(|\\\)/g,'').replace(/\\mathrm\{([^}]*)\}/g,'$1').replace(/\\text\{([^}]*)\}/g,'$1').replace(/\\times/g,'×').replace(/\\Delta/g,'Δ').replace(/\\pi/g,'π').replace(/\\lambda/g,'λ').replace(/\\nu/g,'ν').replace(/\\rightarrow/g,'→').replace(/\\to/g,'→').replace(/\\,/g,' ').replace(/\\;/g,' ').replace(/\\frac\{([^{}]+)\}\{([^{}]+)\}/g,'($1)/($2)').replace(/\^\{([^{}]+)\}/g,'^($1)').replace(/_\{([^{}]+)\}/g,'_($1)').replace(/\\([A-Za-z]+)/g,'$1');el.innerHTML=x;el.classList.add('math-fallback')})}
+function render(){const d=DATA[setName],qs=d[part];$('#title').textContent='Chemistry 1 — '+setName;$('#questions').innerHTML=`<h2>${part==='mcq'?'PART A — Multiple Choice':'PART B — Written Response'}</h2>`+qs.map(q=>part==='mcq'?mc(q):wq(q)).join('');bind();nav();progress();setTimeout(()=>{if(!tex($('#questions')))fallbackMath($('#questions'))},80)}
+function mediaHtml(q){if(!q.image)return '';const source=q.imageSourceUrl?`<a href="${q.imageSourceUrl}" target="_blank" rel="noopener">${q.imageSource||'แหล่งที่มาภาพ'}</a>`:(q.imageSource||'');return `<img src="${q.image}" class="question-image" alt="ภาพประกอบข้อ ${q.id}" loading="lazy" data-zoom="${q.image}">${source?`<div class="image-source">ที่มาภาพ: ${source}</div>`:''}`}
+function mc(q){return `<section class="card" id="q${q.id}"><div class="qhead"><b>ข้อ ${q.id}</b><span>${q.topic} · ${q.difficulty}</span></div><div class="prompt">${q.prompt}</div>${mediaHtml(q)}<div class="options">${q.options.map((o,i)=>`<label class="option ${submitted?(i===q.answer?'correct':(ans[q.id]===i?'wrong':'')):''}"><input type="radio" name="q${q.id}" value="${i}" ${ans[q.id]===i?'checked':''} ${submitted?'disabled':''}><b>${letters[i]}.</b><span>${o}</span></label>`).join('')}</div>${submitted?`<div class="solution"><b>เฉลย ${letters[q.answer]}</b><br>${q.explanation}</div>`:''}</section>`}
+function wq(q){return `<section class="card" id="q${q.id}"><div class="qhead"><b>ข้อ ${q.id}</b><span>${q.topic} · ${q.difficulty}</span></div><div class="written-question"><span class="question-label">โจทย์</span><div class="question-text">${q.prompt}</div>${mediaHtml(q)}</div><textarea class="written" data-id="${q.id}" ${submitted?'readonly':''} placeholder="เขียนวิธีทำ เหตุผล และคำตอบของคุณที่นี่...">${wr[q.id]||''}</textarea>${submitted?`<div class="solution"><b>แนวคำตอบ</b><br>${q.solution}</div>`:''}</section>`}
+function bind(){document.querySelectorAll('input[type=radio]').forEach(x=>x.onchange=()=>{ans[+x.name.slice(1)]=+x.value;save();progress();nav()});document.querySelectorAll('.written').forEach(x=>x.oninput=()=>{wr[+x.dataset.id]=x.value;save();progress();nav()});document.querySelectorAll('[data-zoom]').forEach(img=>img.onclick=()=>{$('#imageZoom').src=img.dataset.zoom;imageDlg.showModal()})}
 function nav(){const all=[...DATA[setName].mcq,...DATA[setName].written];$('#nav').innerHTML=all.map(q=>{let done=q.id<=20?ans[q.id]!==undefined:(wr[q.id]||'').trim();return `<button class="${done?'done':''}" onclick="go(${q.id})">${q.id}</button>`}).join('')}
 function go(id){part=id<=20?'mcq':'written';tabs();render();setTimeout(()=>$('#q'+id)?.scrollIntoView({behavior:'smooth'}),30)} function progress(){let a=DATA[setName].mcq.filter(q=>ans[q.id]!==undefined).length,b=DATA[setName].written.filter(q=>(wr[q.id]||'').trim()).length;$('#pt').textContent=`${a+b}/25 (MCQ ${a}/20, Written ${b}/5)`;$('#pb').style.width=((a+b)/25*100)+'%'}
 function tabs(){document.querySelectorAll('.tab').forEach(b=>b.classList.toggle('active',b.dataset.part===part))} document.querySelectorAll('.tab').forEach(b=>b.onclick=()=>{part=b.dataset.part;tabs();render()});
 $('#setSel').value=setName;$('#setSel').onchange=e=>{setName=e.target.value;localStorage.setItem('chem3_set',setName);part='mcq';load();tabs();render()};
-$('#submit').onclick=()=>{if(!submitted){if(!confirm('ส่งข้อสอบชุดนี้และเปิดเฉลยหรือไม่?'))return;submitted=true;localStorage.setItem(key('sub'),'1');render()} let correct=DATA[setName].mcq.reduce((s,q)=>s+(ans[q.id]===q.answer),0);let pctA=correct/20*100;let readiness=pctA>=90?'พื้นฐาน Part A แข็งแรงมาก':pctA>=80?'พื้นฐาน Part A พร้อมสอบ':pctA>=70?'พื้นฐาน Part A ค่อนข้างพร้อม':pctA>=60?'ควรทบทวนบางบทก่อนสอบ':'ควรกลับไปทบทวนพื้นฐานหลายหัวข้อ';$('#scoreBody').innerHTML=`<h2>${setName}</h2><div class="score">Part A: ${correct}/20 (${correct*2}/40 คะแนน)</div><p><b>สถานะเบื้องต้น:</b> ${readiness}</p><p>Part B มีน้ำหนัก 60 คะแนนและต้องตรวจวิธีทำ/เหตุผลตาม rubric. ใช้ปุ่ม “คัดลอกคำตอบ” แล้วส่งให้ ChatGPT ตรวจแบบละเอียดได้</p>`;scoreDlg.showModal()};
+$('#submit').onclick=()=>{if(!submitted){if(!confirm('ส่งข้อสอบชุดนี้และเปิดเฉลยหรือไม่?'))return;submitted=true;localStorage.setItem(key('sub'),'1');render()}let correct=DATA[setName].mcq.reduce((s,q)=>s+(ans[q.id]===q.answer),0);let pctA=correct/20*100;let readiness=pctA>=90?'พื้นฐาน Part A แข็งแรงมาก':pctA>=80?'พื้นฐาน Part A พร้อมสอบ':pctA>=70?'พื้นฐาน Part A ค่อนข้างพร้อม':pctA>=60?'ควรทบทวนบางบทก่อนสอบ':'ควรกลับไปทบทวนพื้นฐานหลายหัวข้อ';$('#scoreBody').innerHTML=`<h2>${setName}</h2><div class="score">Part A: ${correct}/20 (${correct*2}/40 คะแนน)</div><p><b>สถานะเบื้องต้น:</b> ${readiness}</p><p>Part B มีน้ำหนัก 60 คะแนนและต้องตรวจวิธีทำ/เหตุผลตาม rubric. ใช้ปุ่ม “คัดลอกคำตอบ” แล้วส่งให้ ChatGPT ตรวจแบบละเอียดได้</p>`;scoreDlg.showModal()};
 $('#reset').onclick=()=>{if(!confirm('ล้างคำตอบเฉพาะ '+setName+' ?'))return;['ans','wr','sub'].forEach(x=>localStorage.removeItem(key(x)));ans={};wr={};submitted=false;render()};
-$('#copy').onclick=async()=>{let s=`Chemistry 1 — ${setName}
-Part A
-`+DATA[setName].mcq.map(q=>`${q.id}.${ans[q.id]===undefined?'—':letters[ans[q.id]]}`).join(', ')+`
-
-Part B
-`+DATA[setName].written.map(q=>`ข้อ ${q.id}:
-${wr[q.id]||'(ยังไม่ตอบ)'}`).join('\n\n');try{await navigator.clipboard.writeText(s);alert('คัดลอกแล้ว')}catch(e){prompt('คัดลอก:',s)}};
-$('#closeScore').onclick=()=>scoreDlg.close();$('#closeImage').onclick=()=>imageDlg.close();$('#imageZoom').onclick=()=>imageDlg.close();window.addEventListener('load',()=>{load();render();setTimeout(()=>tex(document.querySelector('aside')),30)});
+$('#copy').onclick=async()=>{let s=`Chemistry 1 — ${setName}\nPart A\n`+DATA[setName].mcq.map(q=>`${q.id}.${ans[q.id]===undefined?'—':letters[ans[q.id]]}`).join(', ')+`\n\nPart B\n`+DATA[setName].written.map(q=>`ข้อ ${q.id}:\n${wr[q.id]||'(ยังไม่ตอบ)'}`).join('\n\n');try{await navigator.clipboard.writeText(s);alert('คัดลอกแล้ว')}catch(e){prompt('คัดลอก:',s)}};
+$('#closeScore').onclick=()=>scoreDlg.close();$('#closeImage').onclick=()=>imageDlg.close();$('#imageZoom').onclick=()=>imageDlg.close();document.addEventListener('DOMContentLoaded',()=>{load();render();setTimeout(()=>{if(!tex(document.body))fallbackMath(document.body)},250);setTimeout(()=>{if(window.renderMathInElement)tex(document.body);else fallbackMath(document.body)},1600)});
